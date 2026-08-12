@@ -43,6 +43,17 @@
                                   @if(str_contains(Route::currentRouteName(), 'notes')) text-indigo-600 @endif">
                             Minhas Notas
                         </a>
+                        <a href="{{ route('notes.trash') }}" 
+                           class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1
+                                  @if(Route::currentRouteName() === 'notes.trash') text-indigo-600 @endif">
+                            <span>🗑️</span>
+                            <span>Lixeira</span>
+                            @if(auth()->user()->notes()->onlyTrashed()->exists())
+                                <span class="ml-1 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-600 rounded-full">
+                                    {{ auth()->user()->notes()->onlyTrashed()->count() }}
+                                </span>
+                            @endif
+                        </a>
 
                         <!-- Menu do Usuário -->
                         <div class="relative group">

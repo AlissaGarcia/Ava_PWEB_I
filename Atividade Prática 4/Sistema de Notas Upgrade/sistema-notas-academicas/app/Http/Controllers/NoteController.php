@@ -82,6 +82,76 @@ class NoteController extends Controller
 
         return redirect()
             ->route('notes.index')
-            ->with('success', 'Nota excluída com sucesso!');
+            ->with('success', 'Nota excluída e movida para lixeira!');
     }
-}
+
+    /**
+     * LIXEIRA (SOFT DELETE)
+     * =====================
+     */
+
+    /**
+     * Exibir notas na lixeira
+     */
+    public function trash()
+    {
+        $notes = auth()->user()->notes()->onlyTrashed()->latest('deleted_at')->get();
+
+        return view('notes.trash', compact('notes'));
+    }
+
+    /**
+     * Restaurar uma nota da lixeira
+     */
+    public function restore($id)
+    {
+        $note = auth()->user()->notes()->withTrashed()->findOrFail($id);
+
+        $this->authorize('delete', $note);
+
+        $note->restore();
+
+        return redirect()
+            ->route('notes.trash')
+            ->with('success', 'Nota restaurada com sucesso!');
+    }
+
+    /**
+     * Excluir permanentemente uma nota
+     */
+    public function forceDelete($id)
+    {
+        $note = auth()->user()->notes()->withTrashed()->findOrFail($id);
+
+        $this->authorize('delete', $note);
+
+        $note->forceDelete();
+
+        return redirect()
+            ->route('notes.trash')
+            ->with('success', 'Nota deletada permanentemente!');
+    }
+
+    /**
+     * Esvaziar toda a lixeira do usuário
+     */
+    public function emptyTrash()
+    {
+        auth()->user()->notes()->onlyTrashed()->forceDelete();
+
+        return redirect()
+            ->route('notes.trash')
+            ->with('success', 'Lixeira esvaziada!');
+    }
+
+    /**
+     * Restaurar todas as notas da lixeira
+     */
+    public function restoreAll()
+    {
+        auth()->user()->notes()->onlyTrashed()->restore();
+
+        return redirect()
+            ->route('notes.trash')
+            ->with('success', 'Todas as notas foram restauradas!');
+    }
